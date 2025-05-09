@@ -11,15 +11,13 @@ public class Account {
         return balance;
     }
 
-    // valfri metod för insättning/uttag om ni vill bygga vidare
+
     public void deposit(double amount) {
         balance += amount;
     }
-
     public void withdraw(double amount) {
-        if (amount > balance) {
-            throw new IllegalArgumentException("Otillräckligt saldo");
-        }
         balance -= amount;
     }
+
+
 }
