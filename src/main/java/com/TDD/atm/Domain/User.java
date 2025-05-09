@@ -10,15 +10,17 @@ public class User {
 
     // Användarens PIN-kod
     private final String pinCode;
-
+    //Användaren Account
+    private final Account account;
     /**
      * Konstruktor som skapar en användare med ett kortnummer och en PIN-kod.
      * @param cardNumber användarens kortnummer
      * @param pinCode användarens PIN-kod
      */
-    public User(String cardNumber, String pinCode) {
+    public User(String cardNumber, String pinCode, Account account) {
         this.cardNumber = cardNumber;
         this.pinCode = pinCode;
+        this.account = account;
     }
 
     /**
@@ -35,5 +37,8 @@ public class User {
      */
     public String getPinCode() {
         return pinCode;
+    }
+    public Account getAccount() {
+        return account;
     }
 }

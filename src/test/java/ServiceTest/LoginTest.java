@@ -1,11 +1,14 @@
 package ServiceTest;
 
+import com.TDD.atm.Domain.Account;
 import com.TDD.atm.Service.AuthService;
 import com.TDD.atm.Repository.InMemoryUserRepository;
 import com.TDD.atm.Domain.User;
 import com.TDD.atm.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,7 +29,7 @@ class AuthServiceTest {
         authService = new AuthService(userRepository);
 
         // Lägger till en testanvändare med kortnummer och PIN-kod
-        userRepository.save(new User("1234567890", "1234"));
+        userRepository.save(new User("1234567890", "1234",new Account(556611)));
     }
 
     // Testar att inloggning fungerar med korrekt kortnummer och PIN-kod
