@@ -10,12 +10,16 @@ public class BalanceService {
 
     /**
      * Hämtar kontosaldot för en given användare.
+     * Här hämtar vi det första kontot i listan för användaren.
+     * För att stödja flera konton kan du lägga till logik för att välja ett specifikt konto om användaren har mer än ett.
      */
     public double getBalance(User user) {
-        if (user == null || user.getAccount() == null) {
-            throw new IllegalArgumentException("User or account must not be null");
+        if (user == null || user.getAccounts() == null || user.getAccounts().isEmpty()) {
+            throw new IllegalArgumentException("User or accounts must not be null or empty");
         }
 
-        return user.getAccount().getBalance();
+        // Här hämtar vi det första kontot i listan för nuvarande användare.
+        // Du kan välja att hantera flera konton om det behövs.
+        return user.getAccounts().get(0).getBalance(); // Hämta saldot från det första kontot
     }
 }
