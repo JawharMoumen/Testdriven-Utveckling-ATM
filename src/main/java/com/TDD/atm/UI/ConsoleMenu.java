@@ -1,81 +1,129 @@
 package com.TDD.atm.UI;
 
-import com.TDD.atm.Domain.Account;
+import com.TDD.atm.Domain.User;
+import com.TDD.atm.Service.DepositService;
 import com.TDD.atm.Service.WithdrawalService;
+import com.TDD.atm.Service.BalanceService;
+import com.TDD.atm.Service.AuthService;
+import com.TDD.atm.Repository.UserRepository;
 
 import java.util.Scanner;
 
 public class ConsoleMenu {
-    private final Scanner scanner;
-    private final Account account;
+    private final AuthService authService;
+    private final DepositService depositService;
     private final WithdrawalService withdrawalService;
+    private final BalanceService balanceService;
+    private final UserRepository userRepository;
+    private final Scanner scanner = new Scanner(System.in);
 
-    public ConsoleMenu(Account account, WithdrawalService withdrawalService) {
-        this.account = account;
+    public ConsoleMenu(AuthService authService, DepositService depositService, WithdrawalService withdrawalService,
+                       BalanceService balanceService, UserRepository userRepository) {
+        this.authService = authService;
+        this.depositService = depositService;
         this.withdrawalService = withdrawalService;
-        this.scanner = new Scanner(System.in);
+        this.balanceService = balanceService;
+        this.userRepository = userRepository;
     }
 
     public void start() {
-        boolean running = true;
+        boolean loggedIn = false;
+        int attempts = 0; // Håller koll på antalet försök
+        final int maxAttempts = 3;
 
-        while (running) {
-            printMenu();
-            int choice = readChoice();
+        while (!loggedIn && attempts < maxAttempts) {
+            System.out.println("Välkommen till ATM.");
+            System.out.print("Ange kortnummer: ");
+            String cardNumber = scanner.nextLine();
+            System.out.print("Ange PIN-kod: ");
+            String pinCode = scanner.nextLine();
 
-            switch (choice) {
-                case 1 -> showBalance();
-                case 2 -> makeDeposit();
-                case 3 -> makeWithdrawal();
-                case 4 -> {
-                    System.out.println("Tack för att du använde ATM. Hej då!");
-                    running = false;
+            // Försök logga in
+            if (authService.login(cardNumber, pinCode)) {
+                loggedIn = true;
+                System.out.println("Inloggning lyckades!");
+                User user = userRepository.findByCardNumber(cardNumber); // Hämta användaren
+                showAccountMenu(user); // Visa huvudmenyn
+            } else {
+                attempts++;
+                if (attempts < maxAttempts) {
+                    System.out.println("Felaktigt kortnummer eller PIN. Försök igen.");
                 }
-                default -> System.out.println("Ogiltigt val. Försök igen.");
             }
         }
-    }
 
-    private void printMenu() {
-        System.out.println("\n--- ATM MENY ---");
-        System.out.println("1. Visa saldo");
-        System.out.println("2. Sätt in pengar");
-        System.out.println("3. Ta ut pengar");
-        System.out.println("4. Avsluta");
-        System.out.print("Ditt val: ");
-    }
-
-    private int readChoice() {
-        while (!scanner.hasNextInt()) {
-            System.out.println("Ange en siffra.");
-            scanner.next(); // rensar felaktig input
+        if (!loggedIn) {
+            System.out.println("Felaktigt kortnummer eller PIN. Programmet avslutas.");
+            System.exit(0); // Avslutar programmet efter max antal försök
         }
-        return scanner.nextInt();
     }
 
-    private void showBalance() {
-        System.out.printf("Ditt saldo är: %.2f kr%n", account.getBalance());
+    private void showAccountMenu(User user) {
+        boolean running = true;
+        while (true) {
+            System.out.println("\nVälj konto:");
+            System.out.println("1. tryck in 1 för Konto 1 " );
+            // Här kan du lägga till fler konton om du har flera konton
+            System.out.print("Ange kontonummer för att välja ett konto: ");
+            int accountChoice = scanner.nextInt();
+            scanner.nextLine(); // Rensar buffert
+
+            if (accountChoice != 1) {
+                System.out.println("Ogiltigt kontonummer.");
+                continue;
+            }
+
+            // Visa kontoåtgärder efter att användaren har valt konto
+            showAccountActions(user);
+        }
     }
 
-    private void makeDeposit() {
-        System.out.print("Ange belopp att sätta in: ");
-        double amount = scanner.nextDouble();
-        account.deposit(amount);
-        System.out.printf("%.2f kr har satts in.%n", amount);
-        // Visa den uppdaterade balansen efter insättningen
-        showBalance();
-    }
+    private void showAccountActions(User user) {
+        boolean running = true;
+        while (running) {
+            System.out.println("\nVälj åtgärd:");
+            System.out.println("1. Visa saldo");
+            System.out.println("2. Sätt in pengar");
+            System.out.println("3. Ta ut pengar");
+            System.out.println("4. Logga ut");
 
-    private void makeWithdrawal() {
-        System.out.print("Ange belopp att ta ut: ");
-        double amount = scanner.nextDouble();
-        try {
-            withdrawalService.withdraw(account, amount);  // Här skickar vi in 'account'
-            System.out.printf("%.2f kr har tagits ut.%n", amount);
-            // Visa den uppdaterade balansen efter uttaget
-            showBalance();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Fel: " + e.getMessage());
+            int action = scanner.nextInt();
+            scanner.nextLine(); // Rensar buffert
+
+            switch (action) {
+                case 1:
+                    // Visa saldo
+                    System.out.println("Ditt saldo är: " + user.getAccount().getBalance());
+                    break;
+                case 2:
+                    // Sätt in pengar
+                    System.out.println("Ange belopp att sätta in:");
+                    double depositAmount = scanner.nextDouble();
+                    scanner.nextLine(); // Rensar buffert
+                    depositService.deposit(user.getAccount(), depositAmount);
+                    System.out.println("Insättning lyckades. Ditt nya saldo är: " + user.getAccount().getBalance());
+                    break;
+                case 3:
+                    // Ta ut pengar
+                    System.out.println("Ange belopp att ta ut:");
+                    double withdrawalAmount = scanner.nextDouble();
+                    scanner.nextLine(); // Rensar buffert
+                    try {
+                        withdrawalService.withdraw(user.getAccount(), withdrawalAmount);
+                        System.out.println("Uttag lyckades. Ditt nya saldo är: " + user.getAccount().getBalance());
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Fel: " + e.getMessage());
+                    }
+                    break;
+                case 4:
+                    // Logga ut och avsluta programmet
+                    System.out.println("Du har loggats ut.");
+                    running = false;// Stänger ner loopen här
+                    System.exit(0); // Stänger av programmet
+                    break; // Avsluta medan du håller användaren på huvudmenyn
+                default:
+                    System.out.println("Ogiltigt val, försök igen.");
+            }
         }
     }
 }
