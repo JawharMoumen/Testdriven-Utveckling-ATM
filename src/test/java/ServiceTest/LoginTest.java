@@ -1,4 +1,5 @@
 package ServiceTest;
+import java.util.Collections;
 
 import com.TDD.atm.Domain.Account;
 import com.TDD.atm.Service.AuthService;
@@ -29,7 +30,7 @@ class AuthServiceTest {
         authService = new AuthService(userRepository);
 
         // Lägger till en testanvändare med kortnummer och PIN-kod
-        userRepository.save(new User("1234567890", "1234",new Account(556611)));
+        userRepository.save(new User("1234567890", "1234", Collections.singletonList(new Account(556611))));
     }
 
     // Testar att inloggning fungerar med korrekt kortnummer och PIN-kod

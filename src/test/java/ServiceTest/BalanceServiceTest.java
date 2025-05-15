@@ -6,6 +6,8 @@ import com.TDD.atm.Service.BalanceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BalanceServiceTest {
@@ -19,7 +21,7 @@ public class BalanceServiceTest {
     public void setUp() {
         balanceService = new BalanceService();                  // Skapar ny instans av tjänsten
         testAccount = new Account(1000.0);                      // Skapar konto med startsaldo
-        testUser = new User("12345678", "1234", testAccount);   // Skapar användare kopplad till kontot
+        testUser = new User("12345678", "1234", Collections.singletonList(testAccount));   // Skapar användare kopplad till kontot
     }
 
     @Test
