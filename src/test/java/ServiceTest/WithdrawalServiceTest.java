@@ -6,6 +6,10 @@ import com.TDD.atm.Service.WithdrawalService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +19,8 @@ public class WithdrawalServiceTest {
 
     @BeforeEach
     public void setUp() {
-        user = new User("123456", "1111", new Account(1000.0));  // Skapar en User med ett konto
+        user = new User("123456", "1111", Collections.singletonList(new Account(1000.0)));
+        // Skapar en User med ett konto
         withdrawalService = new WithdrawalService();
     }
 
@@ -39,7 +44,7 @@ public class WithdrawalServiceTest {
             // Här försöker vi ta ut mer pengar än vad som finns på kontot
             withdrawalService.withdraw(user.getAccount(), 1200.0);
         });
-        assertEquals("Insufficient funds", exception.getMessage());
+        assertEquals("Insufficient funds, Try again", exception.getMessage());
     }
 
     @Test
